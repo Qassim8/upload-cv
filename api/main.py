@@ -5,6 +5,7 @@ import pdfplumber
 from keybert import KeyBERT
 from io import BytesIO
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 
 app = FastAPI()
