@@ -50,8 +50,6 @@ async def upload_cv(file: UploadFile = File(...)):
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
 # تشغيل السيرفر
-port = int(os.getenv("PORT", 8000))  # استخدام المنفذ المحدد من Render أو 8000 افتراضيًا
-
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=port)
