@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 import pdfplumber
 from keybert import KeyBERT
 from io import BytesIO
@@ -7,6 +8,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 
 # 1. تحميل ملف الـ PDF
 def extract_text_from_pdf(pdf_file):
@@ -44,7 +48,7 @@ async def upload_cv(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# تشغيل السيرفر
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="localhost", port=8000)
+# # تشغيل السيرفر
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="localhost", port=8000)
