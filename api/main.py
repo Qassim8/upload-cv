@@ -5,6 +5,7 @@ import pdfplumber
 from keybert import KeyBERT
 from io import BytesIO
 from fastapi.middleware.cors import CORSMiddleware
+from sentence_transformers import SentenceTransformer
 import os
 
 
@@ -23,13 +24,14 @@ def extract_text_from_pdf(pdf_file):
 
 # 2. استخراج الكلمات المفتاحية باستخدام KeyBERT
 def extract_keywords(text):
-    kw_model = KeyBERT()
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2');
+    kw_model = KeyBERT(model)
     keywords = kw_model.extract_keywords(text, top_n=5)  # استخراج أعلى 5 كلمات مفتاحية
     return keywords
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # السماح بطلبات React
+    allow_origins=["*"], # السماح بطلبات React
     allow_credentials=True,
     allow_methods=["*"],  # السماح بجميع أنواع الطلبات (GET, POST, DELETE...)
     allow_headers=["*"],  # السماح بجميع الرؤوس
