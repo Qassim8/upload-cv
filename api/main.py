@@ -1,18 +1,18 @@
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from sklearn.metrics.pairwise import cosine_similarity
 import pdfplumber
-from keybert import KeyBERT
 from io import BytesIO
 from fastapi.middleware.cors import CORSMiddleware
 from sentence_transformers import SentenceTransformer
 import os
-
+import numpy as np
+import re
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-
 
 # 1. تحميل ملف الـ PDF
 def extract_text_from_pdf(pdf_file):
@@ -22,21 +22,37 @@ def extract_text_from_pdf(pdf_file):
             text += page.extract_text()
     return text
 
-# 2. استخراج الكلمات المفتاحية باستخدام KeyBERT
-def extract_keywords(text):
-    model = SentenceTransformer('paraphrase-MiniLM-L6-v2');
-    kw_model = KeyBERT(model)
-    keywords = kw_model.extract_keywords(text, top_n=5)  # استخراج أعلى 5 كلمات مفتاحية
+# 2. استخراج الكلمات المفتاحية باستخدام SentenceTransformer
+def extract_keywords(text, top_n=5):
+    model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+    
+    # تقسيم النص إلى كلمات أو جمل قصيرة
+    words = list(set(re.findall(r'\b\w{4,}\b', text.lower())))  # كلمات أطول من 3 حروف
+
+    if not words:
+        return []
+
+    # الحصول على التمثيل الشعاعي للجمل والكلمات
+    text_embedding = model.encode([text])
+    word_embeddings = model.encode(words)
+
+    # حساب التشابه بين النص والكلمات
+    similarities = cosine_similarity(text_embedding, word_embeddings)[0]
+
+    # ترتيب الكلمات حسب التشابه
+    top_indices = similarities.argsort()[-top_n:][::-1]
+    keywords = [words[i] for i in top_indices]
+
     return keywords
 
+# CORS middleware (السماح للـ React بالاتصال)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # السماح بطلبات React
+    allow_origins=["*"],  # السماح بطلبات React
     allow_credentials=True,
     allow_methods=["*"],  # السماح بجميع أنواع الطلبات (GET, POST, DELETE...)
     allow_headers=["*"],  # السماح بجميع الرؤوس
 )
-
 
 @app.post("/upload-cv/")
 async def upload_cv(file: UploadFile = File(...)):
