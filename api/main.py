@@ -48,7 +48,7 @@ async def upload_cv(file: UploadFile = File(...)):
     except Exception as e:
         return JSONResponse(content={"error": str(e)}, status_code=500)
 
-# # تشغيل السيرفر
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="localhost", port=8000)
+# تشغيل السيرفر
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="https://qassim8.github.io/upload-cv/")
